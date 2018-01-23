@@ -34,12 +34,18 @@ const checkDepositHistory = async (currency) => {
     console.log("Finish");
 }
 */
-const getDepositHistory = async (limit) => {
-    const history = await bitxAPI.getDepositHistory();
+const getDepositHistories = async (limit) => {
+    const history = await bitxAPI.getDepositHistories();
     if (limit !== undefined)
         return history.slice(0, limit);
     return history;
 }
+
+const getDepositHistory = async (currency) => {
+    const history = await bitxAPI.getDepositHistory(currency);
+    return history;
+}
+
 
 const checkMarket = async () => {
     const market = await bitxAPI.getMarketSummaries();
@@ -47,7 +53,8 @@ const checkMarket = async () => {
     for (const i in market) {
         marketName = market[i].MarketName;
         price = market[i].Last;
-        msg = marketName + ': ' + price;
+        msg = `${marketName}: ${price}`;
+
         if (marketName == 'USDT-BTC') {
             console.log(msg);
             if (price < 9500)
@@ -62,6 +69,12 @@ const checkMarket = async () => {
     //  console.log(market);
 }
 
+
+const getMarketSummary = async (market) => {
+    const summary = await bitxAPI.getMarketSummary(market);
+    return summary;
+}
+
 function showTimeLeftSinceLastTransaction(history) {
     const date = new Date(history[0].LastUpdated + "Z");
     const timeSpan = timeLeft(date);
@@ -72,9 +85,13 @@ function timeLeft(endDate) {
     const now = new Date();
     const diff = now - endDate;
 
-    const hours = Math.floor(diff / 3.6e6);
-    const minutes = Math.floor((diff % 3.6e6) / 6e4);
-    const seconds = Math.floor((diff % 6e4) / 1000);
+    return dateToHMSObject(diff);
+}
+
+function dateToHMSObject(date) {
+    const hours = Math.floor(date / 3.6e6);
+    const minutes = Math.floor((date % 3.6e6) / 6e4);
+    const seconds = Math.floor((date % 6e4) / 1000);
     return {
         seconds: seconds,
         minutes: minutes,
@@ -94,21 +111,49 @@ function init() {
 
 const main = async () => {
     console.log("main");
+
     let db = jsonfile.readFileSync(depositFile);
     const lastDeposit = new Date(db.lastDeposit);
 
-    const history = await getDepositHistory(5);
+    const history = await getDepositHistories(15);
 
-    for (const i in history) {
-        const currentDeposit = new Date(history[i].LastUpdated);
+    for (let deposit of history) {
+        const depositDate = new Date(deposit.LastUpdated);
 
 
-        if (currentDeposit.getTime() <= lastDeposit.getTime())
+        if (depositDate.getTime() <= lastDeposit.getTime())
             break;
 
-        const total = await bitxAPI.getBalance(history[i].Currency);
-        const msg = `${history[i].Currency}: +${history[i].Amount}\nTotal: ${total}`;
+        //find prev deposit
+        let profit;
+        for (let prevDeposit of history) {
+            const prevDepositDate = new Date(prevDeposit.LastUpdated);
 
+            if (deposit.Currency !== prevDeposit.Currency ||
+                prevDepositDate.getTime() >= depositDate.getTime())
+                continue;
+
+            const miningTimeMs = depositDate - prevDepositDate;
+            const miningTimeH = miningTimeMs / 1000 / 60 / 60;
+
+            const summ = await getMarketSummary('USDT-ETC');
+            const price = summ[0].Last;
+            const profitPerHour = price / miningTimeH;
+            const profitPerMonth = profitPerHour * 24 * 30;
+
+            profit = (profitPerMonth).toFixed()
+
+            console.log(profit);
+
+            break;
+        }
+
+
+        const total = await bitxAPI.getBalance(deposit.Currency);
+        let msg = '';
+        msg += `${deposit.Currency}: +${deposit.Amount}\n`;
+        msg += `Profit: ${profit}$\n`;
+        msg += `Total: ${total}\n`;
 
         teleAPI.sendMessage(msg);
     }
