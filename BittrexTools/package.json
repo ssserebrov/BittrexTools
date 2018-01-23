@@ -5,5 +5,14 @@
   "main": "app.js",
   "author": {
     "name": "ASerebrov"
+  },
+  "scripts": {
+    "start": "node app/app.js"
+  },
+  "dependencies": {
+    "jsonfile": "^4.0.0",
+    "node-bittrex-api": "^0.8.1",
+    "node-cron": "^1.2.1",
+    "request": "^2.83.0"
   }
 }
