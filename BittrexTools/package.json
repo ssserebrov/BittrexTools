@@ -1,0 +1,9 @@
+{
+  "name": "bittrex-tools",
+  "version": "0.0.0",
+  "description": "BittrexTools",
+  "main": "app.js",
+  "author": {
+    "name": "ASerebrov"
+  }
+}
