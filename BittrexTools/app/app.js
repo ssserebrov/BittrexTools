@@ -6,7 +6,7 @@ const cron = require('node-cron');
 const fs = require('fs');
 const jsonfile = require('jsonfile');
 
-const bitxAPI = require('./customModules/bittrexAPI');
+const bitxAPI = require('my-node-bittrex');
 const teleAPI = require('./customModules/teleAPI');
 
 const config = readJson('./app/config/config.json');

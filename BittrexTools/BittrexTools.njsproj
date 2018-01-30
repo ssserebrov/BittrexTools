@@ -29,7 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="app\app.js" />
-    <Compile Include="app\customModules\bittrexAPI.js" />
     <Compile Include="app\customModules\teleAPI.js" />
     <Content Include="app\config\config.json" />
     <Content Include="app\db\deposit.json" />
