@@ -29,7 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="app\app.js" />
-    <Compile Include="app\customModules\teleAPI.js" />
     <Content Include="app\config\config.json" />
     <Content Include="app\db\deposit.json" />
     <Content Include="package.json" />
@@ -39,7 +38,6 @@
     <Folder Include="app\config\" />
     <Folder Include="app\db\" />
     <Folder Include="app\" />
-    <Folder Include="app\customModules\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

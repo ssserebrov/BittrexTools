@@ -7,7 +7,7 @@ const fs = require('fs');
 const jsonfile = require('jsonfile');
 
 const bitxAPI = require('my-node-bittrex');
-const teleAPI = require('./customModules/teleAPI');
+const teleAPI = require('my-node-telegram');
 
 const config = readJson('./app/config/config.json');
 const depositFile = './app/db/deposit.json';
@@ -106,7 +106,7 @@ function timeLeftSec(endDate) {
 
 function init() {
     bitxAPI.init(config.bittrex.APIkey, config.bittrex.APIsecret);
-    teleAPI.init(config.telegram.APIkey, config.telegram.chatID);
+    teleAPI.init(config.telegram.APIkey, config.telegram.chatID, 'Bittrex Tools');
 }
 
 const main = async () => {
@@ -176,7 +176,7 @@ const main = async () => {
 init();
 main();
 //checkMarket();
-var task = cron.schedule('*/10 * * * *', function () {
+var task = cron.schedule('30 */10 * * * *', function () {
     main().catch(err => {
         console.log(err);
     });
