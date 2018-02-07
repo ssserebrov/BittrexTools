@@ -69,6 +69,37 @@ const checkMarket = async () => {
     //  console.log(market);
 }
 
+const getTotalUsdtBalance = async () => {
+    let balances = await bitxAPI.getBalances();
+    let markets = await bitxAPI.getMarketSummaries();
+    let totalBtcBalance = 0.0;
+    let totalUsdBalance = 0.0;
+
+    for (let currency of balances) {
+        if (currency.Currency === "BTC") {
+            totalBtcBalance += currency.Balance;
+            continue;
+        }
+
+        const btcMarketName = `BTC-${currency.Currency}`;
+        for (let market of markets) {
+
+            if (market.MarketName === btcMarketName) {
+                totalBtcBalance += currency.Balance * market.Last;
+            }
+        }
+    }
+
+    for (let market of markets) {
+        if (market.MarketName === 'USDT-BTC') {
+            totalUsdBalance = totalBtcBalance * market.Last;
+        }
+    }
+
+    console.log(totalUsdBalance + "$");
+    return totalUsdBalance;
+}
+
 
 const getMarketSummary = async (market) => {
     const summary = await bitxAPI.getMarketSummary(market);
@@ -112,6 +143,8 @@ function init() {
 const main = async () => {
     console.log("main");
 
+    await showTotal();
+
     let db = jsonfile.readFileSync(depositFile);
     const lastDeposit = new Date(db.lastDeposit);
 
@@ -136,7 +169,7 @@ const main = async () => {
             const miningTimeMs = depositDate - prevDepositDate;
             const miningTimeH = miningTimeMs / 1000 / 60 / 60;
 
-            const summ = await getMarketSummary('USDT-ETC');
+            const summ = await getMarketSummary(`USDT-${deposit.Currency}`);
             const price = summ[0].Last;
             const profitPerHour = price / miningTimeH;
             const profitPerMonth = profitPerHour * 24 * 30;
