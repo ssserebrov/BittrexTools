@@ -31,6 +31,9 @@
     <Compile Include="app\app.js" />
     <Content Include="app\config\config.json" />
     <Content Include="app\db\deposit.json" />
+    <Content Include="app\db\history.json">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>

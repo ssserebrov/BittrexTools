@@ -11,6 +11,7 @@ const teleAPI = require('my-node-telegram');
 
 const config = readJson('./app/config/config.json');
 const depositFile = './app/db/deposit.json';
+const historyFile = './app/db/history.json';
 
 function readJson(path) {
     return JSON.parse(fs.readFileSync(path, 'utf8'))
@@ -74,10 +75,21 @@ const getTotalUsdtBalance = async () => {
     let markets = await bitxAPI.getMarketSummaries();
     let totalBtcBalance = 0.0;
     let totalUsdBalance = 0.0;
+    let historyItem = {};
+    let balancesUsd = {};
+    let btcToUsdt;
+
+    for (let market of markets) {
+        if (market.MarketName === 'USDT-BTC') {
+            btcToUsdt = market.Last;
+            break;
+        }
+    }
 
     for (let currency of balances) {
         if (currency.Currency === "BTC") {
             totalBtcBalance += currency.Balance;
+            balancesUsd[currency.Currency] = currency.Balance * btcToUsdt;
             continue;
         }
 
@@ -85,18 +97,38 @@ const getTotalUsdtBalance = async () => {
         for (let market of markets) {
 
             if (market.MarketName === btcMarketName) {
-                totalBtcBalance += currency.Balance * market.Last;
+                const currencyBtcBalance = currency.Balance * market.Last;
+                totalBtcBalance += currencyBtcBalance;
+                balancesUsd[currency.Currency] = currencyBtcBalance * btcToUsdt;
             }
         }
     }
 
-    for (let market of markets) {
-        if (market.MarketName === 'USDT-BTC') {
-            totalUsdBalance = totalBtcBalance * market.Last;
-        }
-    }
+    totalUsdBalance = totalBtcBalance * btcToUsdt;
+
 
     console.log(totalUsdBalance + "$");
+
+
+
+
+
+
+
+
+
+    let history = jsonfile.readFileSync(historyFile);
+    let d = new Date();
+    console.log(d);
+
+    historyItem['datetime'] = d;
+    historyItem['total'] = totalUsdBalance;
+    historyItem['balances'] = balancesUsd;
+
+    history.push(historyItem);
+
+    jsonfile.writeFileSync(historyFile, history)
+
     return totalUsdBalance;
 }
 
@@ -143,7 +175,7 @@ function init() {
 const main = async () => {
     console.log("main");
 
-    await showTotal();
+    await getTotalUsdtBalance();
 
     let db = jsonfile.readFileSync(depositFile);
     const lastDeposit = new Date(db.lastDeposit);
