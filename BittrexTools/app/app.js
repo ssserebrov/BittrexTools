@@ -182,6 +182,9 @@ const main = async () => {
 
     const history = await getDepositHistories(15);
 
+    db.lastDeposit = history[0].LastUpdated;
+    jsonfile.writeFileSync(depositFile, db)
+
     for (let deposit of history) {
         const depositDate = new Date(deposit.LastUpdated);
 
@@ -222,10 +225,6 @@ const main = async () => {
 
         teleAPI.sendMessage(msg);
     }
-
-
-    db.lastDeposit = history[0].LastUpdated;
-    jsonfile.writeFileSync(depositFile, db)
 
     console.log("main exit");
 }
